@@ -25,6 +25,8 @@ app.use(bodyParser.json());
 
 app.use(cors());
 
+app.use(cors({ origin: "https://shrouded-castle-77871.herokuapp.com/", credentials: true }))
+
 // Add endpoint
 app.get('/', (req, res) => {
   console.log('i enter')
