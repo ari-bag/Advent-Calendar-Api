@@ -1,95 +1,35 @@
-const createError = require("http-errors");
-const express = require("express");
-const path = require("path");
-const cookieParser = require("cookie-parser");
-const logger = require("morgan");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const port = process.env.PORT || 4000;
-const publicDomain = process.env.PUBLIC_DOMAIN || "http://localhost:3000";
-//const session = require("express-session");
-//const MongoStore = require("connect-mongo")(session);
-require("dotenv").config();
+'use strict'
 
-const apiRouter = require("./routes/api");
-//const usersRouter = require("./routes/users");
+// require express and bodyParser
+const  express = require("express");
+const  bodyParser = require("body-parser");
 
-// MONGOOSE CONNECTION
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    keepAlive: true,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log(`Connected to database`))
-  .catch((err) => console.error(err));
+require("./config/db")
 
-// EXPRESS SERVER INSTANCE
-const app = express();
+// Import API route
+var routes = require('./routes/api'); //importing route
 
-// MIDDLEWARE
-app.use(logger("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
-app.use(
-  cors({
-    credentials: true,
-    origin: [publicDomain],
-  })
-);
+// create express app
+const  app = express();
 
-//CORS SETTINGS TO ALLOW CROSS-ORIGIN INTERACTION
+app.use("/api", routes);
 
-// app.use(
-//   cors({
-//     credentials: true,
-//     origin:
-//       (process.env.PUBLIC_DOMAIN,
-//       "https://dnd-quiz-game.herokuapp.com",
-//       "http://dnd-quiz-game.herokuapp.com"),
-//   })
-// );
+// define port to run express app
+const  port = process.env.PORT || 3000;
 
-// allows cross origin resource sharing
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE");
-  res.header("Access-Control-Allow-Credentials", true);
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
+
+// use bodyParser middleware on express app
+app.use(bodyParser.urlencoded({ extended:true }));
+app.use(bodyParser.json());
+
+// Add endpoint
+app.get('/', (req, res) => {
+  console.log('i enter')
+res.send("Hello World");
 });
 
-// ROUTER MIDDLEWARE
-app.use("/api", apiRouter);
-//app.use("/users", usersRouter);
+// Listen to server
+app.listen(port, () => {
 
-// ROUTE FOR SERVING REACT APP (index.html)
-app.use((req, res) => {
-  // If no routes match, send them the React HTML.
-  res.sendFile(__dirname + "/public/index.html");
+console.log(`Server running at http://localhost:${port}`);
 });
-
-// ERROR HANDLING
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  res.status(404).json({ code: "not found" });
-});
-
-// error handler
-app.use(function (err, req, res, next) {
-  // always log the error
-  console.error("ERROR", req.method, req.path, err);
-
-  // only render if the error ocurred before sending the response
-  if (!res.headersSent) {
-    const statusError = err.status || "500";
-    res.status(statusError).json(err);
-  }
-});
-
-module.exports = app;
