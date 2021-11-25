@@ -6,8 +6,8 @@ const PresentSchema = new Schema({
   day: { type: Number },
   name: { type: String },
   img: { type: String },
-  author: { type: String },
-  twitter: { type: String },
+  autor: { type: Array },
+  twitter: { type: Array },
   download: { type: String },
   description: { type: String }
 });
